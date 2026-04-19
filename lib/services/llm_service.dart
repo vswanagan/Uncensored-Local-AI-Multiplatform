@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:get/get.dart';
 import 'package:llamadart/llamadart.dart';
+import 'package:path/path.dart' as p;
 
 /// Wraps llamadart's LlamaEngine for model loading, generation, and lifecycle.
 class LlmService extends GetxService {
@@ -22,6 +23,24 @@ class LlmService extends GetxService {
   bool _loadingCancelled = false;
 
   StreamSubscription? _generateSub;
+
+  String get loadedModelFilename {
+    final path = loadedModelPath.value;
+    if (path.isEmpty) return '';
+    return p.basename(path);
+  }
+
+  String get publicModelId {
+    final filename = loadedModelFilename;
+    if (filename.isEmpty) return 'local';
+    final stem = filename.toLowerCase().endsWith('.gguf')
+        ? filename.substring(0, filename.length - 5)
+        : p.basenameWithoutExtension(filename);
+    return stem
+        .replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '-')
+        .replaceAll(RegExp(r'-+'), '-')
+        .replaceAll(RegExp(r'^-|-$'), '');
+  }
 
   /// Initialize the service.
   Future<LlmService> init() async {
@@ -75,7 +94,9 @@ class LlmService extends GetxService {
 
       // Start a timer to animate progress while loading
       Timer? progressTimer;
-      progressTimer = Timer.periodic(const Duration(milliseconds: 300), (timer) {
+      progressTimer = Timer.periodic(const Duration(milliseconds: 300), (
+        timer,
+      ) {
         if (_loadingCancelled) {
           timer.cancel();
           return;
@@ -146,7 +167,7 @@ class LlmService extends GetxService {
     r'|<s>'
     r'|\[INST\]'
     r'|\[/INST\]'
-    r'|\[end\]'
+    r'|\[end\]',
   );
 
   /// Pattern that signals the model is hallucinating a new user turn — stop immediately.
@@ -165,6 +186,9 @@ class LlmService extends GetxService {
   }) async* {
     if (_engine == null || !isLoaded.value) {
       throw StateError('No model loaded. Call loadModel() first.');
+    }
+    if (isGenerating.value) {
+      throw StateError('Another generation is already in progress.');
     }
 
     isGenerating.value = true;
@@ -191,7 +215,8 @@ class LlmService extends GetxService {
 
         // Check if model is hallucinating a user turn — stop immediately
         if (_userTurnPattern.hasMatch(buffer)) {
-          final cleaned = buffer.replaceAll(_stopPatterns, '')
+          final cleaned = buffer
+              .replaceAll(_stopPatterns, '')
               .replaceAll(_userTurnPattern, '')
               .trim();
           if (cleaned.isNotEmpty) {
@@ -237,6 +262,57 @@ class LlmService extends GetxService {
     }
   }
 
+  /// Generate a chat completion using llamadart's chat-template API.
+  Stream<String> generateChatCompletion({
+    required List<LlamaChatMessage> messages,
+    GenerationParams params = const GenerationParams(),
+  }) async* {
+    if (_engine == null || !isLoaded.value) {
+      throw StateError('No model loaded. Call loadModel() first.');
+    }
+    if (isGenerating.value) {
+      throw StateError('Another generation is already in progress.');
+    }
+
+    isGenerating.value = true;
+    tokensPerSecond.value = 0.0;
+    final stopwatch = Stopwatch()..start();
+    int tokenCount = 0;
+
+    try {
+      await for (final chunk in _engine!.create(
+        messages,
+        params: params,
+        toolChoice: ToolChoice.none,
+      )) {
+        final choice = chunk.choices.isNotEmpty ? chunk.choices.first : null;
+        final content = choice?.delta.content;
+        if (content == null || content.isEmpty) continue;
+
+        tokenCount++;
+        if (stopwatch.elapsedMilliseconds > 0) {
+          tokensPerSecond.value =
+              tokenCount / (stopwatch.elapsedMilliseconds / 1000);
+        }
+        yield content;
+      }
+    } finally {
+      stopwatch.stop();
+      lastGenerationTokens.value = tokenCount;
+      lastGenerationSpeed.value = tokensPerSecond.value;
+      isGenerating.value = false;
+    }
+  }
+
+  Future<int> countTokens(String text) async {
+    if (_engine == null || !isLoaded.value) return 0;
+    try {
+      return await _engine!.getTokenCount(text);
+    } catch (_) {
+      return 0;
+    }
+  }
+
   /// Stop ongoing generation.
   Future<void> stopGeneration() async {
     _generateSub?.cancel();
@@ -268,7 +344,9 @@ class LlmService extends GetxService {
 
   /// Build a single prompt string from chat messages.
   String _buildPrompt(
-      List<Map<String, String>> messages, String? systemPrompt) {
+    List<Map<String, String>> messages,
+    String? systemPrompt,
+  ) {
     final buffer = StringBuffer();
 
     if (systemPrompt != null && systemPrompt.isNotEmpty) {

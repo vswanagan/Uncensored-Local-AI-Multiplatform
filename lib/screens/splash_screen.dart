@@ -6,6 +6,7 @@ import '../theme/app_colors.dart';
 import '../services/llm_service.dart';
 import '../services/model_manager.dart';
 import '../services/chat_storage_service.dart';
+import '../services/local_api_server_service.dart';
 import '../routes/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -35,6 +36,9 @@ class _SplashScreenState extends State<SplashScreen> {
       setState(() => _status = 'Preparing AI engine...');
       await Get.find<LlmService>().init();
 
+      setState(() => _status = 'Preparing local API...');
+      await Get.find<LocalApiServerService>().init();
+
       setState(() => _status = 'Ready!');
       await Future.delayed(const Duration(milliseconds: 500));
 
@@ -54,21 +58,25 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
             // Logo
             Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                gradient: AppColors.accentGradient,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.accent.withOpacity(0.3),
-                    blurRadius: 30,
-                    spreadRadius: 5,
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.accentGradient,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accent.withValues(alpha: 0.3),
+                        blurRadius: 30,
+                        spreadRadius: 5,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: const Icon(Icons.bolt_rounded, size: 42, color: Colors.white),
-            )
+                  child: const Icon(
+                    Icons.bolt_rounded,
+                    size: 42,
+                    color: Colors.white,
+                  ),
+                )
                 .animate()
                 .fadeIn(duration: 600.ms)
                 .scale(begin: const Offset(0.8, 0.8)),

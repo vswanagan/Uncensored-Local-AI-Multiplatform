@@ -87,6 +87,37 @@ Open the app and go to the **Models** tab. Tap **Download** on any model you lik
 
 Tap **Load**, then go to the **Chat** tab and start your conversation. It's that simple.
 
+### Use Portable AI as a Local OpenAI API
+
+After loading a model, open **Settings** and enable **Local API server**.
+
+- Base URL: `http://127.0.0.1:4891/v1`
+- API key: `local` for clients that require a value
+
+List available local models:
+
+```bash
+curl http://127.0.0.1:4891/v1/models
+```
+
+Create a non-streaming chat completion:
+
+```bash
+curl http://127.0.0.1:4891/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"local","messages":[{"role":"user","content":"Say hello in one sentence"}]}'
+```
+
+Create a streaming chat completion:
+
+```bash
+curl -N http://127.0.0.1:4891/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"local","stream":true,"messages":[{"role":"user","content":"Write one short haiku"}]}'
+```
+
+Claude Code uses Anthropic-compatible endpoints, so direct Claude Code support requires a future `/v1/messages` bridge. OpenAI-compatible clients can use this local API directly.
+
 ---
 
 ## 🗺 Roadmap
