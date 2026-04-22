@@ -5,13 +5,7 @@
   <p><strong>Run unrestricted AI models entirely on your device.<br/>No cloud. No filters. No limits.</strong></p>
 
 
-  [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
-  [![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25%20Local-purple?style=flat-square)](#)
-  [![Flutter](https://img.shields.io/badge/Built%20with-Flutter-54C5F8?style=flat-square&logo=flutter)](https://flutter.dev)
-
-  <br/>
-
-  [Overview](#-overview) · [Download](#-download) · [Features](#-features) · [Quick Start](#-quick-start) · [Local API](#-local-api-server) · [Roadmap](#-roadmap)
+  [Overview](#overview) · [Download](#download) · [Features](#features) · [Quick Start](#quick-start) · [Local API](#local-api-server) · [Roadmap](#roadmap)
 
 </div>
 
@@ -27,11 +21,15 @@ No API keys. No subscriptions. No content restrictions. Your conversations never
 
 > **Desktop platforms** (Windows, macOS, Linux) are supported by the Flutter framework but need community testing and polish. **[We'd love your help!](#-contributing)**
 
+**🎥 Watch the Setup & Demo Video: [https://youtu.be/2Pnv68iHIaQ](https://youtu.be/2Pnv68iHIaQ)**
+
+[![Uncensored Local AI Demo](https://img.youtube.com/vi/2Pnv68iHIaQ/maxresdefault.jpg)](https://youtu.be/2Pnv68iHIaQ)
+
 ---
 
 ## Download
 
-> **Android APK — Latest Release (v1.0.0)**
+### Android APK — Latest Release (v1.0.0)
 
 | APK | Architecture | Best For | Size |
 |-----|-------------|----------|------|
@@ -40,6 +38,12 @@ No API keys. No subscriptions. No content restrictions. Your conversations never
 | [**app-x86_64-release.apk**](https://github.com/techjarves/Uncensored-Local-AI-Multiplatform/releases/download/v1.0.0/app-x86_64-release.apk) | x86 64-bit | Emulators / ChromeOS | ~55 MB |
 
 > **Not sure which to pick?** Download `arm64-v8a` — it works on virtually all modern Android phones.
+
+### iOS IPA — Pre-Release
+
+| File | Note |
+|------|------|
+| [**ios_pre_release.zip**](https://github.com/user-attachments/files/26956389/ios_pre_release.zip) | **Important:** You must **extract** this `.zip` file after downloading to get the actual **`.ipa`** app file to install. |
 
 ---
 
@@ -67,7 +71,21 @@ No API keys. No subscriptions. No content restrictions. Your conversations never
 3. Tap the downloaded APK to install
 4. Open the app, go to **Models** tab, download a model, and start chatting
 
-### iOS (Build from Source)
+### iOS
+
+**1. Sideloading via TrollStore (Recommended - No 7 day limit):**
+1. Download [**ios_pre_release.zip**](https://github.com/user-attachments/files/26956389/ios_pre_release.zip) to your device.
+2. Unzip/extract it using the built-in iOS **Files** app to get the **`.ipa`** file.
+3. Open TrollStore, tap the **+** in the top right, and choose **Install IPA File**.
+4. Select the extracted `.ipa` file and install.
+
+**2. Sideloading via AltStore / AltServer (Requires PC/Mac):**
+1. Ensure AltServer is running on your computer and AltStore is installed on your iPhone.
+2. Download [**ios_pre_release.zip**](https://github.com/user-attachments/files/26956389/ios_pre_release.zip) to your device and extract the **`.ipa`** file using the **Files** app.
+3. Open AltStore on your device, go to **My Apps**, and tap the **+** at the top left.
+4. Select the `.ipa` file to install (your device must be on the same Wi-Fi or connected via cable to your AltServer computer).
+
+**3. Build from Source:**
 
 **Prerequisites:** Mac with Xcode 15+ · [Flutter SDK](https://flutter.dev/docs/get-started/install)
 
